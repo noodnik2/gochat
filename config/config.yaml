@@ -1,0 +1,12 @@
+# Gochat Configuration
+
+# Select which adapter to use; i.e. either "OpenAI" or "Gemini"
+Adapter: OpenAI | Gemini
+
+OpenAI:
+  ApiKey: YOUR_OPENAI_API_KEY
+  Model: gpt-4-1106-preview # https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo
+
+Gemini:
+  ApiKey: YOUR_GEMINI_API_KEY
+  Model: gemini-pro # see https://ai.google.dev/models
