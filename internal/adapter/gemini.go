@@ -3,8 +3,6 @@ package adapter
 import (
 	"context"
 	"errors"
-	"fmt"
-
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -16,10 +14,10 @@ type Gemini struct {
 }
 
 type ChatterGemini struct {
-	gc  *genai.Client
-	cs  *genai.ChatSession
+	gc    *genai.Client
+	cs    *genai.ChatSession
 	model string
-	ctx context.Context
+	ctx   context.Context
 }
 
 func NewChatterGemini(gcfg Gemini) (*ChatterGemini, error) {
@@ -38,7 +36,7 @@ func (c *ChatterGemini) Close() error {
 	return c.gc.Close()
 }
 
-func (c *ChatterGemini) MakeSynchronousTextQuery(input string) error {
+func (c *ChatterGemini) MakeSynchronousTextQuery(input string, scribe Scribe) error {
 	iter := c.cs.SendMessageStream(c.ctx, genai.Text(input))
 
 	for {
@@ -52,12 +50,11 @@ func (c *ChatterGemini) MakeSynchronousTextQuery(input string) error {
 
 		for _, candidate := range resp.Candidates {
 			for _, part := range candidate.Content.Parts {
-				fmt.Printf("%s", part)
+				scribe.Printf("%s", part)
 			}
 		}
 	}
 
-	fmt.Println()
+	scribe.Println()
 	return nil
 }
-

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/noodnik2/gochat/internal/adapter"
 	"os"
 	"strings"
 
@@ -26,6 +27,12 @@ func main() {
 	defer func() { _ = c.Close() }()
 	s := bufio.NewScanner(os.Stdin)
 
+	scribe := adapter.Scribe{}
+	if errScr := scribe.Open(); errScr != nil {
+		panic(errScr)
+	}
+	defer func() { _ = scribe.Close() }()
+
 	fmt.Printf("Using model: %s\n", c.Model)
 	fmt.Println("Type 'exit' to quit")
 	fmt.Println("Ask me anything: ")
@@ -37,13 +44,13 @@ func main() {
 		if input == "" {
 			continue
 		}
-		
+
 		if input == "exit" {
 			fmt.Println("Goodbye!")
 			break
 		}
 
-		if tqErr := c.MakeSynchronousTextQuery(input); tqErr != nil {
+		if tqErr := c.MakeSynchronousTextQuery(input, scribe); tqErr != nil {
 			panic(tqErr)
 		}
 	}
