@@ -1,15 +1,17 @@
 package service
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/noodnik2/gochat/internal/adapter"
 	"github.com/noodnik2/gochat/internal/config"
+	"github.com/noodnik2/gochat/internal/model"
 )
 
 type Chatterer interface {
 	io.Closer
-	MakeSynchronousTextQuery(input string, scribe adapter.Scribe) error
+	MakeSynchronousTextQuery(input string, tw adapter.Terminal) (string, error)
 }
 
 type Chatter struct {
@@ -38,12 +40,13 @@ func NewChatter(cfg config.Config) (*Chatter, error) {
 			Model:     cfg.OpenAI.Model,
 		}, nil
 	default:
-		panic("configuration 'Adapter' property not set")
+		return nil, fmt.Errorf("%w: unrecognized 'Adapter' %s",
+			model.ErrConfig, cfg.Scriber)
 	}
 }
 
-func (c *Chatter) MakeSynchronousTextQuery(input string, scribe adapter.Scribe) error {
-	return c.Chatterer.MakeSynchronousTextQuery(input, scribe)
+func (c *Chatter) MakeSynchronousTextQuery(input string, tw adapter.Terminal) (string, error) {
+	return c.Chatterer.MakeSynchronousTextQuery(input, tw)
 }
 
 func (c *Chatter) Close() error {

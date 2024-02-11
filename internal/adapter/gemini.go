@@ -3,6 +3,9 @@ package adapter
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -36,25 +39,27 @@ func (c *ChatterGemini) Close() error {
 	return c.gc.Close()
 }
 
-func (c *ChatterGemini) MakeSynchronousTextQuery(input string, scribe Scribe) error {
+func (c *ChatterGemini) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
 	iter := c.cs.SendMessageStream(c.ctx, genai.Text(input))
 
+	var responseBuilder strings.Builder
 	for {
 		resp, errNext := iter.Next()
 		if errors.Is(errNext, iterator.Done) {
 			break
 		}
 		if errNext != nil {
-			return errNext
+			return "", errNext
 		}
 
 		for _, candidate := range resp.Candidates {
 			for _, part := range candidate.Content.Parts {
-				scribe.Printf("%s", part)
+				responseBuilder.Write([]byte(fmt.Sprintf("%s", part)))
+				tw.Printf("%s", part)
 			}
 		}
 	}
 
-	scribe.Println()
-	return nil
+	tw.Println()
+	return responseBuilder.String(), nil
 }

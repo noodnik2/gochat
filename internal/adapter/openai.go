@@ -30,7 +30,7 @@ func (c *ChatterOpenAI) Close() error {
 	return nil
 }
 
-func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, scribe Scribe) error {
+func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
 
 	message := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
@@ -47,7 +47,7 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, scribe Scribe) er
 		},
 	)
 	if errCc != nil {
-		return errCc
+		return "", errCc
 	}
 
 	var responseText string
@@ -55,13 +55,13 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, scribe Scribe) er
 		response, errRecv := resp.Recv()
 		if errRecv != nil {
 			if !errors.Is(errRecv, io.EOF) {
-				return errRecv
+				return "", errRecv
 			}
 			break
 		}
 		responseChunk := response.Choices[0].Delta.Content
 		responseText += responseChunk
-		scribe.Print(responseChunk)
+		tw.Print(responseChunk)
 	}
 
 	c.dialog = append(c.dialog, openai.ChatCompletionMessage{
@@ -69,6 +69,6 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, scribe Scribe) er
 		Content: responseText,
 	})
 
-	scribe.Println()
-	return nil
+	tw.Println()
+	return responseText, nil
 }

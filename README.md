@@ -12,8 +12,14 @@ models, including:
 
 ## Configuration 
 
-Select the model you wish to use, and enter your credentials for
-accessing that model into the `config-local.yaml` file before running.
+Copy the file `config/config.yaml` into `config/config-local.yaml` in order to create
+your own, private configuration.
+
+In your private configuration (i.e., `config-local.yaml`), select the model you wish to use,
+and enter your credentials for accessing that model before running.
+
+If you wish to create transcripts of your chat sessions, set the `Scriber` configuration value
+to `Template`, and - if needed - customize its formatting in the `TemplateScribe` sections.
 
 ## Running
 
