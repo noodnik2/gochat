@@ -3,7 +3,6 @@ package adapter
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/sashabaranov/go-openai"
@@ -31,7 +30,7 @@ func (c *ChatterOpenAI) Close() error {
 	return nil
 }
 
-func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string) error {
+func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
 
 	message := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,
@@ -48,7 +47,7 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string) error {
 		},
 	)
 	if errCc != nil {
-		return errCc
+		return "", errCc
 	}
 
 	var responseText string
@@ -56,13 +55,13 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string) error {
 		response, errRecv := resp.Recv()
 		if errRecv != nil {
 			if !errors.Is(errRecv, io.EOF) {
-				return errRecv
+				return "", errRecv
 			}
 			break
 		}
 		responseChunk := response.Choices[0].Delta.Content
 		responseText += responseChunk
-		fmt.Print(responseChunk)
+		tw.Print(responseChunk)
 	}
 
 	c.dialog = append(c.dialog, openai.ChatCompletionMessage{
@@ -70,6 +69,6 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string) error {
 		Content: responseText,
 	})
 
-	fmt.Println()
-	return nil
+	tw.Println()
+	return responseText, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"google.golang.org/api/iterator"
@@ -16,10 +17,10 @@ type Gemini struct {
 }
 
 type ChatterGemini struct {
-	gc  *genai.Client
-	cs  *genai.ChatSession
+	gc    *genai.Client
+	cs    *genai.ChatSession
 	model string
-	ctx context.Context
+	ctx   context.Context
 }
 
 func NewChatterGemini(gcfg Gemini) (*ChatterGemini, error) {
@@ -38,26 +39,27 @@ func (c *ChatterGemini) Close() error {
 	return c.gc.Close()
 }
 
-func (c *ChatterGemini) MakeSynchronousTextQuery(input string) error {
+func (c *ChatterGemini) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
 	iter := c.cs.SendMessageStream(c.ctx, genai.Text(input))
 
+	var responseBuilder strings.Builder
 	for {
 		resp, errNext := iter.Next()
 		if errors.Is(errNext, iterator.Done) {
 			break
 		}
 		if errNext != nil {
-			return errNext
+			return "", errNext
 		}
 
 		for _, candidate := range resp.Candidates {
 			for _, part := range candidate.Content.Parts {
-				fmt.Printf("%s", part)
+				responseBuilder.Write([]byte(fmt.Sprintf("%s", part)))
+				tw.Printf("%s", part)
 			}
 		}
 	}
 
-	fmt.Println()
-	return nil
+	tw.Println()
+	return responseBuilder.String(), nil
 }
-

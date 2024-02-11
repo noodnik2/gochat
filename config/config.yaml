@@ -10,3 +10,21 @@ OpenAI:
 Gemini:
   ApiKey: YOUR_GEMINI_API_KEY
   Model: gemini-pro # see https://ai.google.dev/models
+
+# Select which scriber (if any) to use; i.e., either "Template" or "None"
+Scriber: None
+
+# Templates used to format output when "Scriber = Template"
+TemplateScribe:
+  SaveDir: out
+  SaveFile: chat.md
+  Templates:
+    Header: |
+      # Chat at {{ (.Time).Format "02 Jan 06 15:04 MST" }}
+      ## Participants: {{ .Participants }}
+    Entry: |
+      ### {{ (.Time).Format "02 Jan 06 15:04 MST" }}: {{ .Who }}
+      {{ range $line := split .What "\n" }} > {{ $line }}{{ println }}{{ end }}
+    Footer: |
+      ---
+      (chat concluded at {{ (.Time).Format "02 Jan 06 15:04 MST" }})

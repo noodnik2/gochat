@@ -7,15 +7,21 @@ import (
 
 type AdapterType string
 
+type ScriberType string
+
 const (
 	GeminiAdapter AdapterType = "Gemini"
 	OpenAIAdapter AdapterType = "OpenAI"
+	NoScriber     ScriberType = "None"
+	TemplateScriber ScriberType = "Template"
 )
 
 type Config struct {
 	Adapter AdapterType
 	adapter.Gemini
 	adapter.OpenAI
+	Scriber ScriberType
+	adapter.TemplateScribe
 }
 
 func Load() (cfg Config, errParse error) {
