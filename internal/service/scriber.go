@@ -3,14 +3,10 @@ package service
 import (
 	"fmt"
 
-	"github.com/noodnik2/gochat/internal/adapter"
+	"github.com/noodnik2/gochat/internal/adapter/scriber"
 	"github.com/noodnik2/gochat/internal/config"
 	"github.com/noodnik2/gochat/internal/model"
 )
-
-type Scriber struct {
-	Scribe
-}
 
 type Scribe interface {
 	Header(context model.Context)
@@ -19,18 +15,22 @@ type Scribe interface {
 	Close() error
 }
 
-func NewScribe(cfg config.Config) (Scribe, error) {
-	switch cfg.Scriber {
-	case config.NoScriber:
-		return Scriber{Scribe: &adapter.NilScribe{}}, nil
-	case config.TemplateScriber:
-		tScribe, errGem := adapter.NewTemplateScribe(cfg.TemplateScribe)
+type Scriber struct {
+	Scribe
+}
+
+func NewScriber(cfg config.ScriberConfig) (*Scriber, error) {
+	switch cfg.Adapter {
+	case config.NoScriberAdapter:
+		return &Scriber{Scribe: &scriber.NilScribe{}}, nil
+	case config.TemplateScriberAdapter:
+		tScribe, errGem := scriber.NewTemplateScribe(cfg.Adapters.TemplateScribe)
 		if errGem != nil {
-			return Scriber{}, errGem
+			return nil, errGem
 		}
-		return Scriber{Scribe: tScribe}, nil
+		return &Scriber{Scribe: tScribe}, nil
 	}
 
-	return Scriber{}, fmt.Errorf("%w: unrecognized 'Scriber' %s",
-		model.ErrConfig, cfg.Scriber)
+	return nil, fmt.Errorf("%w: unrecognized 'Scriber' adapter: %s",
+		model.ErrConfig, cfg.Adapter)
 }

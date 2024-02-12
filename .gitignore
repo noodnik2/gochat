@@ -1,1 +1,3 @@
-out/**
+transcripts/**
+**/.DS_Store
+!**/.gitkeep

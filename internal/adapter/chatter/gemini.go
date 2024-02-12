@@ -1,4 +1,4 @@
-package adapter
+package chatter
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
+	"github.com/noodnik2/gochat/internal/adapter"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -39,7 +40,7 @@ func (c *ChatterGemini) Close() error {
 	return c.gc.Close()
 }
 
-func (c *ChatterGemini) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
+func (c *ChatterGemini) MakeSynchronousTextQuery(input string, tw *adapter.Console) (string, error) {
 	iter := c.cs.SendMessageStream(c.ctx, genai.Text(input))
 
 	var responseBuilder strings.Builder
