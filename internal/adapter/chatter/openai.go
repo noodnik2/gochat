@@ -1,10 +1,11 @@
-package adapter
+package chatter
 
 import (
 	"context"
 	"errors"
 	"io"
 
+	"github.com/noodnik2/gochat/internal/adapter"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -30,7 +31,7 @@ func (c *ChatterOpenAI) Close() error {
 	return nil
 }
 
-func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw Terminal) (string, error) {
+func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw *adapter.Console) (string, error) {
 
 	message := openai.ChatCompletionMessage{
 		Role:    openai.ChatMessageRoleUser,

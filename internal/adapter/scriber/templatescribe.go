@@ -1,4 +1,4 @@
-package adapter
+package scriber
 
 import (
 	"fmt"

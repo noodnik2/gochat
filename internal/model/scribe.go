@@ -4,7 +4,8 @@ import "time"
 
 type Context struct {
 	Time         time.Time
-	Participants []string
+	User         string
+	Chatter      string
 }
 
 type Entry struct {

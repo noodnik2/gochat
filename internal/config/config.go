@@ -1,27 +1,40 @@
 package config
 
 import (
-	"github.com/noodnik2/gochat/internal/adapter"
+	"github.com/noodnik2/gochat/internal/adapter/chatter"
+	"github.com/noodnik2/gochat/internal/adapter/scriber"
 	"github.com/spf13/viper"
 )
 
 type AdapterType string
 
-type ScriberType string
-
 const (
-	GeminiAdapter AdapterType = "Gemini"
-	OpenAIAdapter AdapterType = "OpenAI"
-	NoScriber     ScriberType = "None"
-	TemplateScriber ScriberType = "Template"
+	GeminiChatterAdapter   AdapterType = "Gemini"
+	OpenAIChatterAdapter   AdapterType = "OpenAI"
+	NoScriberAdapter       AdapterType = "None"
+	TemplateScriberAdapter AdapterType = "Template"
 )
 
+type ChatterConfig struct {
+	Adapter       AdapterType
+	DefaultPrompt string
+	Prompts       map[string]string
+	Adapters      struct {
+		chatter.Gemini
+		chatter.OpenAI
+	}
+}
+
+type ScriberConfig struct {
+	Adapter  AdapterType
+	Adapters struct {
+		scriber.TemplateScribe
+	}
+}
+
 type Config struct {
-	Adapter AdapterType
-	adapter.Gemini
-	adapter.OpenAI
-	Scriber ScriberType
-	adapter.TemplateScribe
+	Chatter ChatterConfig
+	Scriber ScriberConfig
 }
 
 func Load() (cfg Config, errParse error) {
