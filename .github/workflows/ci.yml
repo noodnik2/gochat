@@ -1,0 +1,20 @@
+name: ci
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+          # Cache is managed by golangci-lint
+          # https://github.com/actions/setup-go#caching-dependency-files-and-build-outputs
+          cache: false
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.7.0
+        with:
+          args: --timeout=4m
+          version: v1.55.1
