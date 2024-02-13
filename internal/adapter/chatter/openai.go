@@ -5,64 +5,71 @@ import (
 	"errors"
 	"io"
 
-	"github.com/noodnik2/gochat/internal/adapter"
 	"github.com/sashabaranov/go-openai"
 )
 
 type OpenAI struct {
-	ApiKey string
+	APIKey string
 	Model  string
 }
 
-type ChatterOpenAI struct {
-	ctx    context.Context
+type OpenAIChatter struct {
 	client *openai.Client
 	model  string
 	dialog []openai.ChatCompletionMessage
 }
 
-func NewChatterOpenAI(ccfg OpenAI) (*ChatterOpenAI, error) {
-	ctx := context.Background()
-	client := openai.NewClient(ccfg.ApiKey)
-	return &ChatterOpenAI{ctx: ctx, client: client, model: ccfg.Model}, nil
+func NewOpenAIChatter(cCfg OpenAI) (*OpenAIChatter, error) {
+	client := openai.NewClient(cCfg.APIKey)
+
+	return &OpenAIChatter{client: client, model: cCfg.Model}, nil
 }
 
-func (c *ChatterOpenAI) Close() error {
+func (c *OpenAIChatter) Model() string {
+	return c.model
+}
+
+func (c *OpenAIChatter) Close() error {
 	return nil
 }
 
-func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw *adapter.Console) (string, error) {
-
-	message := openai.ChatCompletionMessage{
+func (c *OpenAIChatter) MakeSynchronousTextQuery(ctx context.Context, console Console, prompt string) (string, error) {
+	message := openai.ChatCompletionMessage{ //nolint:exhaustruct
 		Role:    openai.ChatMessageRoleUser,
-		Content: input,
+		Content: prompt,
 	}
 
 	c.dialog = append(c.dialog, message)
 
 	resp, errCc := c.client.CreateChatCompletionStream(
-		c.ctx,
-		openai.ChatCompletionRequest{
+		ctx,
+		openai.ChatCompletionRequest{ //nolint:exhaustruct
 			Model:    c.model,
 			Messages: c.dialog,
 		},
 	)
+
 	if errCc != nil {
 		return "", errCc
 	}
 
 	var responseText string
+
 	for {
 		response, errRecv := resp.Recv()
+
 		if errRecv != nil {
 			if !errors.Is(errRecv, io.EOF) {
 				return "", errRecv
 			}
+
 			break
 		}
+
 		responseChunk := response.Choices[0].Delta.Content
 		responseText += responseChunk
-		tw.Print(responseChunk)
+
+		console.Print(responseChunk)
 	}
 
 	c.dialog = append(c.dialog, openai.ChatCompletionMessage{
@@ -70,6 +77,7 @@ func (c *ChatterOpenAI) MakeSynchronousTextQuery(input string, tw *adapter.Conso
 		Content: responseText,
 	})
 
-	tw.Println()
+	console.Println()
+
 	return responseText, nil
 }

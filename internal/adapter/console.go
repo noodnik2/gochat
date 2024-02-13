@@ -7,39 +7,42 @@ import (
 	"strings"
 )
 
-type Console struct {
+type Consoler struct {
 	input  *bufio.Scanner
 	output io.Writer
 	err    error
 }
 
-func NewConsole(r io.Reader, w io.Writer) *Console {
-	return &Console{
+func NewConsole(r io.Reader, w io.Writer) *Consoler {
+	return &Consoler{
 		input:  bufio.NewScanner(r),
 		output: w,
 	}
 }
 
-func (t *Console) GetInput() string {
+func (t *Consoler) GetPrompt() string {
 	t.input.Scan()
+
 	return strings.TrimSpace(t.input.Text())
 }
 
-func (t *Console) Print(text string) {
+func (t *Consoler) Print(text string) {
 	t.Printf("%s", text)
 }
 
-func (t *Console) Println(a ...string) {
+func (t *Consoler) Println(a ...string) {
 	for argNum, arg := range a {
 		if argNum > 0 {
 			t.Print(" ")
 		}
+
 		t.Print(arg)
 	}
+
 	t.Print("\n")
 }
 
-func (t *Console) Printf(format string, args ...any) {
+func (t *Consoler) Printf(format string, args ...any) {
 	if t.err == nil {
 		_, t.err = t.output.Write([]byte(fmt.Sprintf(format, args...)))
 	}

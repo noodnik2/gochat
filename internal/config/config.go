@@ -6,17 +6,19 @@ import (
 	"github.com/spf13/viper"
 )
 
-type AdapterType string
+type ScriberAdapterType string
+
+type ChatterAdapterType string
 
 const (
-	GeminiChatterAdapter   AdapterType = "Gemini"
-	OpenAIChatterAdapter   AdapterType = "OpenAI"
-	NoScriberAdapter       AdapterType = "None"
-	TemplateScriberAdapter AdapterType = "Template"
+	GeminiChatterAdapter   ChatterAdapterType = "Gemini"
+	OpenAIChatterAdapter   ChatterAdapterType = "OpenAI"
+	NoScriberAdapter       ScriberAdapterType = "None"
+	TemplateScriberAdapter ScriberAdapterType = "Template"
 )
 
 type ChatterConfig struct {
-	Adapter       AdapterType
+	Adapter       ChatterAdapterType
 	DefaultPrompt string
 	Prompts       map[string]string
 	Adapters      struct {
@@ -26,7 +28,7 @@ type ChatterConfig struct {
 }
 
 type ScriberConfig struct {
-	Adapter  AdapterType
+	Adapter  ScriberAdapterType
 	Adapters struct {
 		scriber.TemplateScribe
 	}
@@ -37,13 +39,21 @@ type Config struct {
 	Scriber ScriberConfig
 }
 
-func Load() (cfg Config, errParse error) {
+func Load() (Config, error) {
 	viper.SetConfigName("config-local")
 	viper.AddConfigPath("config")
 
-	if errParse = viper.ReadInConfig(); errParse != nil {
-		return
+	var cfg Config
+
+	errParse := viper.ReadInConfig()
+	if errParse != nil {
+		return cfg, errParse
 	}
+
 	errParse = viper.Unmarshal(&cfg)
-	return
+	if errParse != nil {
+		return cfg, errParse
+	}
+
+	return cfg, nil
 }

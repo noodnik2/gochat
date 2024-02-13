@@ -7,60 +7,69 @@ import (
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
-	"github.com/noodnik2/gochat/internal/adapter"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
 type Gemini struct {
-	ApiKey string
+	APIKey string
 	Model  string
 }
 
-type ChatterGemini struct {
-	gc    *genai.Client
-	cs    *genai.ChatSession
-	model string
-	ctx   context.Context
+type GeminiChatter struct {
+	client  *genai.Client
+	session *genai.ChatSession
+	model   string
 }
 
-func NewChatterGemini(gcfg Gemini) (*ChatterGemini, error) {
-	ctx := context.Background()
-	gc, gcErr := genai.NewClient(ctx, option.WithAPIKey(gcfg.ApiKey))
+func NewGeminiChatter(ctx context.Context, gCfg Gemini) (*GeminiChatter, error) {
+	gClient, gcErr := genai.NewClient(ctx, option.WithAPIKey(gCfg.APIKey))
 	if gcErr != nil {
-		return nil, nil
+		return nil, gcErr
 	}
 
-	cs := gc.GenerativeModel(gcfg.Model).StartChat()
+	session := gClient.GenerativeModel(gCfg.Model).StartChat()
 
-	return &ChatterGemini{ctx: ctx, gc: gc, cs: cs, model: gcfg.Model}, nil
+	return &GeminiChatter{
+		client:  gClient,
+		session: session,
+		model:   gCfg.Model,
+	}, nil
 }
 
-func (c *ChatterGemini) Close() error {
-	return c.gc.Close()
+func (c *GeminiChatter) Model() string {
+	return c.model
 }
 
-func (c *ChatterGemini) MakeSynchronousTextQuery(input string, tw *adapter.Console) (string, error) {
-	iter := c.cs.SendMessageStream(c.ctx, genai.Text(input))
+func (c *GeminiChatter) Close() error {
+	return c.client.Close()
+}
+
+func (c *GeminiChatter) MakeSynchronousTextQuery(ctx context.Context, console Console, prompt string) (string, error) {
+	iter := c.session.SendMessageStream(ctx, genai.Text(prompt))
 
 	var responseBuilder strings.Builder
+
 	for {
 		resp, errNext := iter.Next()
+
 		if errors.Is(errNext, iterator.Done) {
 			break
 		}
+
 		if errNext != nil {
 			return "", errNext
 		}
 
 		for _, candidate := range resp.Candidates {
 			for _, part := range candidate.Content.Parts {
-				responseBuilder.Write([]byte(fmt.Sprintf("%s", part)))
-				tw.Printf("%s", part)
+				responseBuilder.WriteString(fmt.Sprintf("%s", part))
+				console.Printf("%s", part)
 			}
 		}
 	}
 
-	tw.Println()
+	console.Println()
+
 	return responseBuilder.String(), nil
 }

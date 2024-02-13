@@ -2,6 +2,4 @@ package model
 
 import "errors"
 
-var (
-	ErrConfig = errors.New("configuration error")
-)
+var ErrConfig = errors.New("configuration error")

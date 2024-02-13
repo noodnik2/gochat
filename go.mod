@@ -4,8 +4,6 @@ go 1.21
 
 toolchain go1.21.0
 
-replace github.com/noodnik2/gochat => /Users/martyross/repos/noodnik2/gochat
-
 require (
 	github.com/google/generative-ai-go v0.6.0
 	github.com/sashabaranov/go-openai v1.18.1

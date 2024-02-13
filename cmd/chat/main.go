@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/noodnik2/gochat/internal/adapter"
@@ -9,13 +10,14 @@ import (
 )
 
 func main() {
-
 	cfg, cfgErr := config.Load()
 	if cfgErr != nil {
 		panic(cfgErr)
 	}
 
-	if errChat := controller.DoChat(cfg, adapter.NewConsole(os.Stdin, os.Stdout)); errChat != nil {
+	console := adapter.NewConsole(os.Stdin, os.Stdout)
+
+	if errChat := controller.DoChat(context.Background(), cfg, console); errChat != nil {
 		panic(errChat)
 	}
 }

@@ -12,35 +12,30 @@ import (
 	"github.com/noodnik2/gochat/internal/model"
 )
 
-type Templates struct {
-	Header string
-	Entry  string
-	Footer string
-}
-
 type TemplateScribe struct {
 	SaveDir   string
 	SaveFile  string
-	Templates Templates
+	Templates struct {
+		Header string
+		Entry  string
+		Footer string
+	}
 }
 
-type TemplateScribeImpl struct {
+type TemplateScriber struct {
 	writer     *os.File
 	headerTmpl *template.Template
 	entryTmpl  *template.Template
 	footerTmpl *template.Template
 }
 
-func NewTemplateScribe(cfg TemplateScribe) (*TemplateScribeImpl, error) {
-
+func NewTemplateScribe(cfg TemplateScribe) (*TemplateScriber, error) {
 	tFuncs := template.FuncMap{
-		"split": func(s, sep string) []string {
-			return strings.Split(s, sep)
-		},
+		"split": strings.Split,
 	}
 
 	var (
-		tsi TemplateScribeImpl
+		tsi TemplateScriber
 		err error
 	)
 
@@ -69,19 +64,19 @@ func NewTemplateScribe(cfg TemplateScribe) (*TemplateScribeImpl, error) {
 	return &tsi, nil
 }
 
-func (t TemplateScribeImpl) Header(context model.Context) {
+func (t TemplateScriber) Header(context model.ScribeHeader) {
 	execTemplate(t.headerTmpl, t.writer, context)
 }
 
-func (t TemplateScribeImpl) Entry(entry model.Entry) {
+func (t TemplateScriber) Entry(entry model.ScribeEntry) {
 	execTemplate(t.entryTmpl, t.writer, entry)
 }
 
-func (t TemplateScribeImpl) Footer(outcome model.Outcome) {
+func (t TemplateScriber) Footer(outcome model.ScribeFooter) {
 	execTemplate(t.footerTmpl, t.writer, outcome)
 }
 
-func (t TemplateScribeImpl) Close() error {
+func (t TemplateScriber) Close() error {
 	return t.writer.Close()
 }
 

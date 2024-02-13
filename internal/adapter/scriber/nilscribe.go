@@ -6,10 +6,10 @@ import (
 
 type NilScribe struct{}
 
-func (t NilScribe) Header(model.Context) {}
+func (t NilScribe) Header(model.ScribeHeader) {}
 
-func (t NilScribe) Entry(model.Entry) {}
+func (t NilScribe) Entry(model.ScribeEntry) {}
 
-func (t NilScribe) Footer(model.Outcome) {}
+func (t NilScribe) Footer(model.ScribeFooter) {}
 
 func (t NilScribe) Close() error { return nil }
