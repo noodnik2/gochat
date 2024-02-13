@@ -2,18 +2,18 @@ package model
 
 import "time"
 
-type Context struct {
-	Time         time.Time
-	User         string
-	Chatter      string
+type ScribeHeader struct {
+	Time    time.Time
+	User    string
+	Chatter string
 }
 
-type Entry struct {
+type ScribeEntry struct {
 	Time time.Time
 	Who  string
 	What string
 }
 
-type Outcome struct {
+type ScribeFooter struct {
 	Time time.Time
 }

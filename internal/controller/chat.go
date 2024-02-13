@@ -1,56 +1,59 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"os/user"
 	"time"
 
-	"github.com/noodnik2/gochat/internal/adapter"
+	"github.com/noodnik2/gochat/internal/adapter/chatter"
 	"github.com/noodnik2/gochat/internal/config"
 	"github.com/noodnik2/gochat/internal/model"
 	"github.com/noodnik2/gochat/internal/service"
 )
 
 type chatController struct {
-	console     *adapter.Console
-	scriber     *service.Scriber
-	chatterer   *service.Chatterer
+	console     chatter.Console
+	scribe      service.Scribe
+	chatter     service.Chatter
 	chatterName string
 }
 
-func DoChat(cfg config.Config, console *adapter.Console) (err error) {
-	cc := &chatController{console: console}
-	if cc.chatterer, err = service.NewChatterer(cfg.Chatter); err != nil {
-		return
+func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) error {
+	ctrl := &chatController{console: console}
+
+	var err error
+
+	if ctrl.chatter, err = service.NewChatterer(ctx, cfg.Chatter); err != nil {
+		return err
 	}
 
-	defer func() { _ = cc.chatterer.Close() }()
+	defer func() { _ = ctrl.chatter.Close() }()
 
-	if cc.scriber, err = service.NewScriber(cfg.Scriber); err != nil {
-		return
+	if ctrl.scribe, err = service.NewScriber(cfg.Scriber); err != nil {
+		return err
 	}
 
-	defer func() { _ = cc.scriber.Close() }()
+	defer func() { _ = ctrl.scribe.Close() }()
 
 	userName := getUsername()
 	if userName == "" {
 		userName = "You"
 	}
-	cc.chatterName = cc.chatterer.Model
 
-	cc.scriber.Header(model.Context{
+	ctrl.chatterName = ctrl.chatter.Model()
+
+	ctrl.scribe.Header(model.ScribeHeader{
 		Time:    time.Now(),
 		User:    userName,
-		Chatter: cc.chatterName,
+		Chatter: ctrl.chatterName,
 	})
 
-	defer func() {
-		cc.scriber.Footer(model.Outcome{Time: time.Now()})
-	}()
+	defer func() { ctrl.scribe.Footer(model.ScribeFooter{Time: time.Now()}) }()
 
 	console.Println("gochat started")
 	console.Printf("Hello %s!\n", userName)
-	console.Printf("Using model: %s\n", cc.chatterer.Model)
+	console.Printf("Using model: %s\n", ctrl.chatter.Model())
 
 	defaultPromptName := cfg.Chatter.DefaultPrompt
 	if defaultPromptName != "" {
@@ -60,23 +63,24 @@ func DoChat(cfg config.Config, console *adapter.Console) (err error) {
 		}
 
 		promptUserName := fmt.Sprintf("%s prompt", defaultPromptName)
+
 		console.Printf("%s > %s", promptUserName, prompt)
-		cc.doQuery(promptUserName, prompt)
+		ctrl.doQuery(ctx, promptUserName, prompt)
 	}
 
 	console.Println("Type 'exit' to quit")
 	console.Println("Ask me anything: ")
 
-	cc.doDialog(userName)
+	ctrl.doDialog(ctx, userName)
 
-	return
+	return err
 }
 
-func (cc *chatController) doDialog(userName string) {
+func (cc *chatController) doDialog(ctx context.Context, userName string) {
 	for {
 		cc.console.Print(fmt.Sprintf("%s > ", userName))
-		prompt := cc.console.GetInput()
 
+		prompt := cc.console.GetPrompt()
 		if prompt == "" {
 			continue
 		}
@@ -85,26 +89,25 @@ func (cc *chatController) doDialog(userName string) {
 			break
 		}
 
-		cc.doQuery(userName, prompt)
+		cc.doQuery(ctx, userName, prompt)
 	}
 
 	cc.console.Println("Goodbye!")
-	return
 }
 
-func (cc *chatController) doQuery(userName, prompt string) {
-	cc.scriber.Entry(model.Entry{
+func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) {
+	cc.scribe.Entry(model.ScribeEntry{
 		Time: time.Now(),
 		Who:  userName,
 		What: prompt,
 	})
 
-	response, tqErr := cc.chatterer.MakeSynchronousTextQuery(prompt, cc.console)
+	response, tqErr := cc.chatter.MakeSynchronousTextQuery(ctx, cc.console, prompt)
 	if tqErr != nil {
 		panic(tqErr)
 	}
 
-	cc.scriber.Entry(model.Entry{
+	cc.scribe.Entry(model.ScribeEntry{
 		Time: time.Now(),
 		Who:  cc.chatterName,
 		What: response,
@@ -116,5 +119,6 @@ func getUsername() string {
 	if err != nil {
 		return ""
 	}
+
 	return currentUser.Username
 }

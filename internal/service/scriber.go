@@ -9,9 +9,9 @@ import (
 )
 
 type Scribe interface {
-	Header(context model.Context)
-	Entry(entry model.Entry)
-	Footer(outcome model.Outcome)
+	Header(context model.ScribeHeader)
+	Entry(entry model.ScribeEntry)
+	Footer(outcome model.ScribeFooter)
 	Close() error
 }
 
@@ -23,11 +23,13 @@ func NewScriber(cfg config.ScriberConfig) (*Scriber, error) {
 	switch cfg.Adapter {
 	case config.NoScriberAdapter:
 		return &Scriber{Scribe: &scriber.NilScribe{}}, nil
+
 	case config.TemplateScriberAdapter:
 		tScribe, errGem := scriber.NewTemplateScribe(cfg.Adapters.TemplateScribe)
 		if errGem != nil {
 			return nil, errGem
 		}
+
 		return &Scriber{Scribe: tScribe}, nil
 	}
 
