@@ -66,9 +66,11 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 		promptUserName := fmt.Sprintf("%s prompt", defaultPromptName)
 
 		console.Printf("%s > %s", promptUserName, prompt)
+
 		if !strings.HasSuffix(prompt, "\n") {
 			console.Println()
 		}
+
 		ctrl.doQuery(ctx, promptUserName, prompt)
 	}
 
