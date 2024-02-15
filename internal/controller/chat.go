@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os/user"
+	"strings"
 	"time"
 
 	"github.com/noodnik2/gochat/internal/adapter/chatter"
@@ -65,6 +66,9 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 		promptUserName := fmt.Sprintf("%s prompt", defaultPromptName)
 
 		console.Printf("%s > %s", promptUserName, prompt)
+		if !strings.HasSuffix(prompt, "\n") {
+			console.Println()
+		}
 		ctrl.doQuery(ctx, promptUserName, prompt)
 	}
 

@@ -3,6 +3,7 @@ package chatter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/sashabaranov/go-openai"
@@ -50,7 +51,7 @@ func (c *OpenAIChatter) MakeSynchronousTextQuery(ctx context.Context, console Co
 	)
 
 	if errCc != nil {
-		return "", errCc
+		return "", fmt.Errorf("CreateChatCompletionStream: %w", errCc)
 	}
 
 	var responseText string
@@ -60,7 +61,7 @@ func (c *OpenAIChatter) MakeSynchronousTextQuery(ctx context.Context, console Co
 
 		if errRecv != nil {
 			if !errors.Is(errRecv, io.EOF) {
-				return "", errRecv
+				return "", fmt.Errorf("resp.Recv: %w", errRecv)
 			}
 
 			break
