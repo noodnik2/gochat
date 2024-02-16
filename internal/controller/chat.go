@@ -52,15 +52,13 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 
 	defer func() { ctrl.scribe.Footer(model.ScribeFooter{Time: time.Now()}) }()
 
-	console.Println("gochat started")
-	console.Printf("Hello %s!\n", userName)
-	console.Printf("Using model: %s\n", ctrl.chatter.Model())
+	ctrl.signon(console, userName)
 
 	defaultPromptName := cfg.Chatter.DefaultPrompt
 	if defaultPromptName != "" {
 		prompt := cfg.Chatter.Prompts[defaultPromptName]
 		if prompt == "" {
-			panic(fmt.Errorf("%w: default prompt(%s) not found", model.ErrConfig, defaultPromptName))
+			return fmt.Errorf("%w: default prompt(%s) not found", model.ErrConfig, defaultPromptName)
 		}
 
 		promptUserName := fmt.Sprintf("%s prompt", defaultPromptName)
@@ -71,15 +69,16 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 			console.Println()
 		}
 
-		ctrl.doQuery(ctx, promptUserName, prompt)
+		if qErr := ctrl.doQuery(ctx, promptUserName, prompt); qErr != nil {
+			return fmt.Errorf("for initial prompt: %w", qErr)
+		}
 	}
 
-	console.Println("Type 'exit' to quit")
-	console.Println("Ask me anything: ")
+	signoff(console)
 
 	ctrl.doDialog(ctx, userName)
 
-	return err
+	return nil
 }
 
 func (cc *chatController) doDialog(ctx context.Context, userName string) {
@@ -95,13 +94,15 @@ func (cc *chatController) doDialog(ctx context.Context, userName string) {
 			break
 		}
 
-		cc.doQuery(ctx, userName, prompt)
+		if qErr := cc.doQuery(ctx, userName, prompt); qErr != nil {
+			cc.console.Printf("%s ! error: %s\n", cc.chatter.Model(), qErr)
+		}
 	}
 
 	cc.console.Println("Goodbye!")
 }
 
-func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) {
+func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) error {
 	cc.scribe.Entry(model.ScribeEntry{
 		Time: time.Now(),
 		Who:  userName,
@@ -110,7 +111,7 @@ func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) 
 
 	response, tqErr := cc.chatter.MakeSynchronousTextQuery(ctx, cc.console, prompt)
 	if tqErr != nil {
-		panic(tqErr)
+		return tqErr
 	}
 
 	cc.scribe.Entry(model.ScribeEntry{
@@ -118,6 +119,19 @@ func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) 
 		Who:  cc.chatterName,
 		What: response,
 	})
+
+	return nil
+}
+
+func (cc *chatController) signon(console chatter.Console, userName string) {
+	console.Println("gochat started")
+	console.Printf("Hello %s!\n", userName)
+	console.Printf("Using model: %s\n", cc.chatter.Model())
+}
+
+func signoff(console chatter.Console) {
+	console.Println("Type 'exit' to quit")
+	console.Println("Ask me anything: ")
 }
 
 func getUsername() string {
