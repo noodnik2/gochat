@@ -61,10 +61,18 @@ Several planned enhancements for `gochat` in its Roadmap include:
 - Add support for "chats" with supplied context, using an "embedding" service such as
   [ChromaDB](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/solutions/rag/)
   or [Weaviate](https://weaviate.io/developers/weaviate/starter-guides/generative))
+
 ### Fully local LLMs
 - Add support for "chats" against confidential information, and/or without the need
   for internet connection, such as possible with [ollama](https://ollama.com/).
 
-### Want to Contribute?  Have Ideas?
+### Multimodal Support
+- Now that many LLMs (including [Gemini](https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/overview))
+  support media files (both as prompts and as responses), support for this paradigm
+  could be really useful, and not so hard to implement.
+- Envisioned is some sort of "meta-command" syntax to support access to local or
+  remote media, TBD, ...
+
+## Want to Contribute?  Have Ideas?
 - _Please get in touch!_
 - _Please submit a PR!_
