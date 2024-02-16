@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/noodnik2/gochat/internal/adapter/chatter"
 	"github.com/noodnik2/gochat/internal/adapter/scriber"
 	"github.com/spf13/viper"
@@ -40,8 +42,14 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	viper.SetEnvPrefix("gochat")
 	viper.SetConfigName("config-local")
 	viper.AddConfigPath("config")
+
+	// the following enables you to override configuration values with environment variables
+	// prefixed with "GOCHAT_"; e.g., "make run-chat GOCHAT_CHATTER_ADAPTER=Gemini"
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	var cfg Config
 
