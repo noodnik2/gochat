@@ -23,3 +23,7 @@ jobs:
         with:
           args: --timeout=4m
           version: v1.55.1
+      - name: test
+        run: make test
+      - name: lint
+        run: make lint
