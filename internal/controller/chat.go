@@ -109,6 +109,8 @@ func (cc *chatController) doQuery(ctx context.Context, userName, prompt string) 
 		What: prompt,
 	})
 
+	cc.console.Printf("%s > ", cc.chatterName)
+
 	response, tqErr := cc.chatter.MakeSynchronousTextQuery(ctx, cc.console, prompt)
 	if tqErr != nil {
 		return tqErr
