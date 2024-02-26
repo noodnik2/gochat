@@ -18,12 +18,5 @@ jobs:
           # https://github.com/actions/setup-go#caching-dependency-files-and-build-outputs
           cache: false
       - uses: actions/checkout@v3
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3.7.0
-        with:
-          args: --timeout=4m
-          version: v1.55.1
-      - name: test
-        run: make test
-      - name: lint
-        run: make lint
+      - name: checks
+        run: make test setup-lint lint

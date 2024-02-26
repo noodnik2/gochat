@@ -61,7 +61,7 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 			return fmt.Errorf("%w: default prompt(%s) not found", model.ErrConfig, defaultPromptName)
 		}
 
-		promptUserName := fmt.Sprintf("%s prompt", defaultPromptName)
+		promptUserName := defaultPromptName + " " + "prompt"
 
 		console.Printf("%s > %s", promptUserName, prompt)
 
@@ -83,7 +83,7 @@ func DoChat(ctx context.Context, cfg config.Config, console chatter.Console) err
 
 func (cc *chatController) doDialog(ctx context.Context, userName string) {
 	for {
-		cc.console.Print(fmt.Sprintf("%s > ", userName))
+		cc.console.Printf("%s > ", userName)
 
 		prompt := cc.console.GetPrompt()
 		if prompt == "" {
