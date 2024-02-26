@@ -1,3 +1,4 @@
 transcripts/**
+out/**
 **/.DS_Store
 !**/.gitkeep

@@ -1,4 +1,5 @@
 # `gochat`
+<img align="right" alt="main" src="https://github.com/noodnik2/gochat/actions/workflows/ci.yml/badge.svg?branch=main" />
 
 ## Description
 
@@ -55,14 +56,14 @@ $
 
 ## _Future Roadmap_
 
-Several planned enhancements for `gochat` in its Roadmap include:
+Several envisioned enhancements for `gochat` in its Roadmap include:
 
 ### Retrieval Augmented Generation (RAG)
 - Add support for "chats" with supplied context, using an "embedding" service such as
   [ChromaDB](https://www.trychroma.com/), [Pinecone](https://www.pinecone.io/solutions/rag/)
-  or [Weaviate](https://weaviate.io/developers/weaviate/starter-guides/generative))
+  or [Weaviate](https://weaviate.io/developers/weaviate/starter-guides/generative)
 
-### Fully local LLMs
+### Support for Fully Local LLMs
 - Add support for "chats" against confidential information, and/or without the need
   for internet connection, such as possible with [ollama](https://ollama.com/).
 
@@ -72,6 +73,11 @@ Several planned enhancements for `gochat` in its Roadmap include:
   could be really useful, and not so hard to implement.
 - Envisioned is some sort of "meta-command" syntax to support access to local or
   remote media, TBD, ...
+
+### Speech-to-text / Text-to-speech
+- Use something like Google's [STT](https://pkg.go.dev/cloud.google.com/go/speech) and
+  [TTS](https://pkg.go.dev/cloud.google.com/go/texttospeech) APIs to allow users to
+  interact with the LLM using speech / audio.
 
 ## Want to Contribute?  Have Ideas?
 - _Please get in touch!_

@@ -14,6 +14,7 @@ linters:
     - depguard # irrelevant now
     - nonamedreturns # I like to (be able to judiciously) use named returns
     - exhaustruct # seems excessive & I often use this
+    - testpackage # black-box testing is over-rated (just don't forget to do it! ;-)
 
     # Deprecated ones:
     - structcheck
